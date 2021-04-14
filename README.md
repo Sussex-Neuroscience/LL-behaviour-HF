@@ -31,3 +31,11 @@ The task:
 schematics on how the system is working and how it should work:
 
 ![](/media/connections_treadmill_setup.jpg)
+
+--- 
+
+### notes on implementation:
+
+from what I could gather, Psychopy is not indicated to do millisecond precision of many different variables at once. I had a look on how it deals with timing (more info [here](https://www.psychopy.org/_modules/psychopy/clock.html#Clock)), and thinking that a good route would be to do the behavioural timing critical things on the ESP32.
+
+
