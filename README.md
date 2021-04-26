@@ -39,3 +39,16 @@ schematics on how the system is working and how it should work:
 from what I could gather, Psychopy is not indicated to do millisecond precision of many different variables at once. I had a look on how it deals with timing (more info [here](https://www.psychopy.org/_modules/psychopy/clock.html#Clock)), and thinking that a good route would be to do the behavioural timing critical things on the ESP32.
 
 
+---
+
+initial bill of materials:
+
+|||
+|---|---|
+|Linear actuator||
+|solenoid valves||
+|lick sensors||
+|beehive main board||
+|beehive peltier board||
+|beehive solenoid valve board||
+|||
