@@ -52,3 +52,11 @@ initial bill of materials:
 |beehive peltier board||
 |beehive solenoid valve board||
 |||
+
+
+
+software needed to run the esp32
+REPL
+esp32 micropython firmware
+adafruit Ampy
+

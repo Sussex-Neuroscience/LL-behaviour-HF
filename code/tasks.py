@@ -6,11 +6,11 @@ class task1:
     def __init__(self):
         # ports
         self.lickSensor1 = 1
-        self.lickSensor2 = 2
-        self.actuator1 = 3
-        self.actuator2 = 4
-        self.solenoid1 = 5
-        self.solenoid2 = 6
+        self.lickSensor2 = 3
+        self.actuator1Foward = 2
+        self.actuator1Backward = 15
+        self.solenoid1 = 16
+        self.solenoid2 = 19
         self.stimTrigger = 7
         self.monitor1 = 8
         self.monitor2 = 9
@@ -18,16 +18,26 @@ class task1:
         # set the "direction" of the ports
         self.lickSensor1Pin = Pin(self.lickSensor1, Pin.IN, Pin.PULL_DOWN)
         self.lickSensor2Pin = Pin(self.lickSensor2, Pin.IN, Pin.PULL_DOWN)
-        self.actuator1Pin = Pin(self.actuator1, Pin.OUT)
-        self.actuator2Pin = Pin(self.actuator2, Pin.OUT)
+        self.actuator1ForwardPin = Pin(self.actuator1Forward, Pin.OUT)
+        self.actuator1BackwardPin = Pin(self.actuator2Backward, Pin.OUT)
         self.solenoid1Pin = Pin(self.solenoid1, Pin.OUT)
         self.solenoid2Pin = Pin(self.solenoid2, Pin.OUT)
         self.stimTriggerPin = Pin(self.stimTrigger, Pin.OUT)
         self.monitor1Pin = Pin(self.monitor1, Pin.OUT)
         self.monitor2Pin = Pin(self.monitor2, Pin.OUT)
 
-        # set a seed for a random number generator (fixing the seed will allow for )
 
+        #turn everything off at the beginning
+        self.actuator1ForwardPin.off()
+        self.actuator1BackwardPin.off()
+        self.solenoid1Pin.off()
+        self.solenoid2Pin.off()
+        self.stimTriggerPin.off()
+        self.monitor1Pin.off()
+        self.monitor2Pin.off
+
+        # set a seed for a random number generator (fixing the seed will allow for )
+        # or make a list with the order of presentation in the monitors
         # time/interval variables
         self.iti = 5000  # inter trial interval in ms
         self.baseline = (
@@ -48,7 +58,7 @@ class task1:
         self.uart = UART(1, 9600)                         # init with 9600 baudrate
 
 
-    def task(self):
+    def run_task(self):
         while self.trial <= self.numberOfTrials:
             # if it is the first trial, then wait for the baseline activity measurement
             if self.trial == 1:
@@ -70,13 +80,34 @@ class task1:
         #    stimStatus = self.strimTriggerPin.value()
 
         # once stimulation is done, start the actuators
-        self.actuator1Pin(1)
-        lick1status = self.lickSensor1Pin.value()
-        lick2status = self.lickSensor2Pin.value()
+        self.actuator1ForwardPin.on()
+        #wait for actuator to move spouts forward
+        self.time_intervals(interval_ms=100)
 
+        self.actuator1ForwardPin.off()
+
+        timeWindow = utime.ticks_ms()
+        while timeWindow<self.responseWindowDuration:
+            lick1status = self.lickSensor1Pin.value()
+            lick2status = self.lickSensor2Pin.value()
+            if lick1status == 1 or lick2status==1:
+                if lick1Status == 1 and monitor1Pin.value()==1:
+                    correct = 1
+                self.actuator1BackwardPin.on()
+                
+                #wait for actuator to move spouts backward
+                self.time_intervals(interval_ms=100)
+                
+                self.actuator1BackwardPin.off()
+                
+                break
+            timeWindow = utime.ticks_ms()
+            
+        
+        
         # after trial is done, start iti
-        self.time_intervals(intervals_ms=self.iti)
-        trial = trial + 1
+        self.time_intervals(interval_ms=self.iti)
+        self.trial = self.trial + 1
 
     def time_intervals(self, interval_ms=100):
         time1 = utime.ticks_ms()

@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name "Piezoverstärker_v3.0")(type Legacy)(uri "/home/andre/repositories/sussex-neuro/LL-behaviour-HF/lick_sensor/berlin_initial_model/kicad/Piezoverstärker_v3.0.mod")(options "")(descr ""))
+)

@@ -3,7 +3,9 @@ from psychopy import visual, event, core, data, gui, monitors
 import numpy, random, sys, math
 from psychopy.visual.windowwarp import Warper
 
-import serial
+#eventually remove labjack from system
+#for that we connect via serial to the ESP32
+#import serial
 
 from U6io import U6io
 
@@ -105,9 +107,10 @@ print ("Experiment Duration = ", str(lengthEXP), "seconds")
 print ("At 5 Hz: ", str(lengthEXP * 6.07), "frames")
 
 
-# setup a serial connection with the ESP
-ser = serial.Serial('/dev/ttyUSB0')  # open serial port
-print(ser.name)         # check which port was really used
+# setup a serial connection with the ESP - this will be used when LabJack is removed from the setup
+#ser = serial.Serial('/dev/ttyUSB0')  # open serial port
+#print(ser.name)         # check which port was really used
+
 #add info here to make sure the connection is made
 #ser.write(b'hello')     # write a string
 
@@ -137,7 +140,7 @@ for thisTrial in range(info["trialN"]):
     winran = ranchoice[0]
     gratingran = ranchoice[1]
 
-    print "  "
+    print "test  "
     print "Trial number", thisTrial + 1
     labjack.setOutputVoltageFIO(3, 0)
     print "        Size is: ", sizeGrating, "degree"
@@ -172,4 +175,4 @@ labjack.setOutputVoltageFIO(timeWave, 0)
 
 
 #close serial connection with ESP
-ser.close()             # close port
+#ser.close()             # close port

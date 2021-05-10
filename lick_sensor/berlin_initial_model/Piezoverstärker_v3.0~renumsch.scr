@@ -1,0 +1,10 @@
+GRID MIL 100 OFF;
+DISPLAY NONE 94 -95 -96;
+GRID INCH 0.1;
+EDIT .S1;
+DISP NONE 91 92 94 95 96 97 98 99 231 232 233 ;
+write '@/home/andre/repositories/sussex-neuro/LL-behaviour-HF/lick_sensor/berlin_initial_model/kicad/modified_eagle_files/Piezoverstärker_v3.0.sch';
+board;
+write '@/home/andre/repositories/sussex-neuro/LL-behaviour-HF/lick_sensor/berlin_initial_model/kicad/modified_eagle_files/Piezoverstärker_v3.0.brd';
+
+run fix_via_hack.ulp;
