@@ -53,10 +53,23 @@ initial bill of materials:
 |beehive solenoid valve board||
 |||
 
-
+---
 
 software needed to run the esp32
 REPL
 esp32 micropython firmware
 adafruit Ampy
+
+
+---
+
+notes from the first installation session:
+
+- the Optogenetics LED is controlled by a Thorlabs DC2200 interface. It gets its signals from an arduino box, which in principle can be bypassed since we are already using a microcontroller to take care of the behavioural task.
+- from labjack to scanimage there are 2 signals timewave and twoptrigger.
+
+
+
+
+
 
