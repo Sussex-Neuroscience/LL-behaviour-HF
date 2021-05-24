@@ -1,13 +1,14 @@
 import utime
 from machine import Pin
 from machine import UART
+import urandom
 
 class task1:
     def __init__(self):
         # ports
-        self.lickSensor1 = 1
-        self.lickSensor2 = 3
-        self.actuator1Foward = 2
+        self.lickSensor1 = 0
+        self.lickSensor2 = 4
+        self.actuator1Forward = 2
         self.actuator1Backward = 15
         self.solenoid1 = 16
         self.solenoid2 = 19
@@ -19,7 +20,7 @@ class task1:
         self.lickSensor1Pin = Pin(self.lickSensor1, Pin.IN, Pin.PULL_DOWN)
         self.lickSensor2Pin = Pin(self.lickSensor2, Pin.IN, Pin.PULL_DOWN)
         self.actuator1ForwardPin = Pin(self.actuator1Forward, Pin.OUT)
-        self.actuator1BackwardPin = Pin(self.actuator2Backward, Pin.OUT)
+        self.actuator1BackwardPin = Pin(self.actuator1Backward, Pin.OUT)
         self.solenoid1Pin = Pin(self.solenoid1, Pin.OUT)
         self.solenoid2Pin = Pin(self.solenoid2, Pin.OUT)
         self.stimTriggerPin = Pin(self.stimTrigger, Pin.OUT)
@@ -54,6 +55,12 @@ class task1:
         )
         self.trial = 1  # the current trial
 
+        #create array with indication on which monitor should be on.
+        #this should be a pseudorandom way
+        #set a seed so that all the time the random order is the same 
+        urandom.seed(42)
+        urandom.randint(0,1)
+        urandom.getrandbits(30)
         #initialize serial port 1 for communication with host pc
         self.uart = UART(1, 9600)                         # init with 9600 baudrate
 
