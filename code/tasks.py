@@ -13,8 +13,14 @@ class task1:
         self.solenoid1 = 16
         self.solenoid2 = 19
         self.stimTrigger = 7
-        self.monitor1 = 8
-        self.monitor2 = 9
+        #self.stimIndValue = 0.1
+        self.lickSensor1Ind = 0.1
+        self.lickSensor2Ind = 0.2
+        self.solenoid1Ind = 0.4
+        self.solenoid2Ind = 0.8
+        
+        #self.monitor1 = 8
+        #self.monitor2 = 9
 
         # set the "direction" of the ports
         self.lickSensor1Pin = Pin(self.lickSensor1, Pin.IN, Pin.PULL_DOWN)
@@ -24,8 +30,8 @@ class task1:
         self.solenoid1Pin = Pin(self.solenoid1, Pin.OUT)
         self.solenoid2Pin = Pin(self.solenoid2, Pin.OUT)
         self.stimTriggerPin = Pin(self.stimTrigger, Pin.OUT)
-        self.monitor1Pin = Pin(self.monitor1, Pin.OUT)
-        self.monitor2Pin = Pin(self.monitor2, Pin.OUT)
+        #self.monitor1Pin = Pin(self.monitor1, Pin.OUT)
+        #self.monitor2Pin = Pin(self.monitor2, Pin.OUT)
 
 
         #turn everything off at the beginning
@@ -33,9 +39,9 @@ class task1:
         self.actuator1BackwardPin.off()
         self.solenoid1Pin.off()
         self.solenoid2Pin.off()
-        self.stimTriggerPin.off()
-        self.monitor1Pin.off()
-        self.monitor2Pin.off
+        #self.stimTriggerPin.off()
+        #self.monitor1Pin.off()
+        #self.monitor2Pin.off()
 
         # set a seed for a random number generator (fixing the seed will allow for )
         # or make a list with the order of presentation in the monitors
@@ -59,62 +65,98 @@ class task1:
         #this should be a pseudorandom way
         #set a seed so that all the time the random order is the same 
         urandom.seed(42)
-        urandom.randint(0,1)
-        urandom.getrandbits(30)
+        self.monitorOrder = list()
+        for i in range(self.numberOfTrials):
+            self.monitorOrder.append(urandom.randint(0,1))
+        
+        print(self.monitorOrder)
+            
+        
         #initialize serial port 1 for communication with host pc
-        self.uart = UART(1, 9600)                         # init with 9600 baudrate
+        self.uart = UART(0, 9600)                         # init with 9600 baudrate
 
 
-    def run_task(self):
+
+    def run_task1(self):
         while self.trial <= self.numberOfTrials:
             # if it is the first trial, then wait for the baseline activity measurement
+            #ANALOG OUT = 0
             if self.trial == 1:
                 self.time_intervals(interval_ms=self.baseline)
 
-        # send a trigger out to indicate stimulation is ongoing (so this can be registered by the scan system)
+            #####ANALOG OUT = STIMULATION ON
         
-        self.stimTriggerPin(1)
-        self.time_intervals(interval_ms=self.stimDuration)
-        self.stimTriggerPin(0)
-        
-        #need to send a serial signal so that the stimulation PC turns on the monitors
+            #need to send a serial signal so that the stimulation PC turns on the monitors
+            #start stimulation
+            monitor = self.monitorOrder[self.trial]
+            self.uart.write(monitor)
+            self.stimTriggerPin.on()
+            timeWindow = utime.ticks_ms()
+            stimOn = self.uart.any()
+            while stimOn == 0:
+                #stimulus still running
+                stimOn = self.uart.any()
+            self.stimTriggerPin.off()
+            
+            
+            #while timeWindow<self.stimDuration:
+            #    self.time_intervals(interval_ms=5)
+                
 
-        # receive a trigger while stimulation is running
-        # this is still rudimentary as depending on timing/synching this loop could still be problematic
-        # stimStatus = self.strimTriggerPin.value()
-        # while stimStatus == 1:
-        #    self.time_intervals(interval_ms=5)
-        #    stimStatus = self.strimTriggerPin.value()
+            ##### ANALOG OUT = STIMULATION OFF
 
-        # once stimulation is done, start the actuators
-        self.actuator1ForwardPin.on()
-        #wait for actuator to move spouts forward
-        self.time_intervals(interval_ms=100)
 
-        self.actuator1ForwardPin.off()
+            # once stimulation is done, start the actuators
+            self.actuator1ForwardPin.on()
+            #wait for actuator to move spouts forward
+            self.time_intervals(interval_ms=100)
 
-        timeWindow = utime.ticks_ms()
-        while timeWindow<self.responseWindowDuration:
-            lick1status = self.lickSensor1Pin.value()
-            lick2status = self.lickSensor2Pin.value()
-            if lick1status == 1 or lick2status==1:
-                if lick1Status == 1 and monitor1Pin.value()==1:
+            self.actuator1ForwardPin.off()
+
+            timeWindow = utime.ticks_ms()
+            
+            correct = 0
+            solenoid1 = 0
+            solenoid2 = 0
+
+            while timeWindow<self.responseWindowDuration:
+                lick1Status = self.lickSensor1Pin.value()
+                lick2Status = self.lickSensor2Pin.value()
+                if lick1Status == 1 and monitor == 0:
                     correct = 1
+                    solenoid1 = 1
+                    break
+                elif lick2Status == 1 and monitor == 1:
+                    correct = 1
+                    solenoid2 = 1
+                    break
+                else:
+                    correct = 0
+                    solenoid1 = 0
+                    solenoid2 = 0
+                    
                 self.actuator1BackwardPin.on()
                 
                 #wait for actuator to move spouts backward
                 self.time_intervals(interval_ms=100)
                 
                 self.actuator1BackwardPin.off()
+                timeWindow = utime.ticks_ms()
+                #break
                 
-                break
-            timeWindow = utime.ticks_ms()
             
+            if correct == 1:
+                if solenoid1 == 1:
+                    print("water1")
+                if solenoid2 == 1:
+                    print("water2")
+
+                
         
         
-        # after trial is done, start iti
-        self.time_intervals(interval_ms=self.iti)
-        self.trial = self.trial + 1
+            # after trial is done, start iti
+            self.time_intervals(interval_ms=self.iti)
+            self.trial = self.trial + 1
 
     def time_intervals(self, interval_ms=100):
         time1 = utime.ticks_ms()

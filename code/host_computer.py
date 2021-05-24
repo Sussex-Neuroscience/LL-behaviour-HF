@@ -2,6 +2,7 @@ from __future__ import division  # important
 from psychopy import visual, event, core, data, gui, monitors
 import numpy, random, sys, math
 from psychopy.visual.windowwarp import Warper
+import serial
 
 #eventually remove labjack from system
 #for that we connect via serial to the ESP32
@@ -108,8 +109,9 @@ print ("At 5 Hz: ", str(lengthEXP * 6.07), "frames")
 
 
 # setup a serial connection with the ESP - this will be used when LabJack is removed from the setup
-#ser = serial.Serial('/dev/ttyUSB0')  # open serial port
-#print(ser.name)         # check which port was really used
+ser = serial.Serial('/dev/ttyUSB0')  # open serial port
+print(ser.name)         # check which port was really used
+
 
 #add info here to make sure the connection is made
 #ser.write(b'hello')     # write a string
@@ -132,17 +134,21 @@ for frameN in range(info["PreStim"]):  # Create a prestim
 
 for thisTrial in range(info["trialN"]):
     #ADD SUBROUTINE THAT WILL WAIT FOR SERIAL COMMAND FROM ESP32
-
-    
+    while ser.available() == 0:
+        print("waiting for ESP")
+    monitorSide = ser.readline()
+    print("monitor: " + str(monitorSide))
     # Random screen chosen in each trial
     ran = [[win, grating], [win2, grating2]]
-    ranchoice = random.choice(ran)
+    #ranchoice = random.choice(ran)
+    ranchoice = ran[monitorSide]
+
     winran = ranchoice[0]
     gratingran = ranchoice[1]
 
     print "test  "
     print "Trial number", thisTrial + 1
-    labjack.setOutputVoltageFIO(3, 0)
+    #labjack.setOutputVoltageFIO(timeWave, 0)
     print "        Size is: ", sizeGrating, "degree"
     timex.append(clock.getTime())
     labjack.setOutputVoltageFIO(optoChannel, 0)
@@ -158,20 +164,23 @@ for thisTrial in range(info["trialN"]):
         labjack.setOutputVoltageFIO(pupilCamera, 0)
         winran.flip()
         labjack.setOutputVoltageFIO(pupilCamera, 1)
-        labjack.setOutputVoltageFIO(timeWave, 1)
+        #labjack.setOutputVoltageFIO(timeWave, 1)
         timewave.append(sizeGrating)
+    ser.write("d")
     labjack.setOutputVoltageFIO(optoChannel, 0)
     timex.append(clock.getTime())
+
+
     for frameN in range(info["ISI"]):  # add an ISI or post stim interval
         labjack.setOutputVoltageFIO(pupilCamera, 0)
         winran.flip()
         labjack.setOutputVoltageFIO(pupilCamera, 1)
-        labjack.setOutputVoltageFIO(timeWave, 0)
+        #labjack.setOutputVoltageFIO(timeWave, 0)
         timewave.append(0)
 
 labjack.setOutputVoltageFIO(pupilCamera, 0)
 labjack.setOutputVoltageFIO(optoChannel, 0)
-labjack.setOutputVoltageFIO(timeWave, 0)
+#labjack.setOutputVoltageFIO(timeWave, 0)
 
 
 #close serial connection with ESP
