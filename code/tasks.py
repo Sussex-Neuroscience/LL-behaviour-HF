@@ -2,7 +2,7 @@ import utime
 from machine import Pin
 from machine import UART
 from machine import I2C
-i2c=I2C(0,I2C.MASTER,pins=('GP15','GP14'))
+
 
 import urandom
 
@@ -24,6 +24,9 @@ class task1:
         
         #self.monitor1 = 8
         #self.monitor2 = 9
+        #i2c initialization
+        self.i2c=I2C(0, scl = Pin(14), sda = Pin(15),  freq=400000)
+        self.i2cAdd = self.i2c.scan()
 
         # set the "direction" of the ports
         self.lickSensor1Pin = Pin(self.lickSensor1, Pin.IN, Pin.PULL_DOWN)
@@ -72,43 +75,12 @@ class task1:
         for i in range(self.numberOfTrials):
             self.monitorOrder.append(urandom.randint(0,1))
         
-        print(self.monitorOrder)
+
             
         
         #initialize serial port 1 for communication with host pc
         self.uart = UART(0, 9600)                         # init with 9600 baudrate
 
-    def tests_peripherals(self):
-        for i in range(10):
-            print("trial "+ str(i))
-            # move spouts
-            # once stimulation is done, start the actuators
-            self.actuator1ForwardPin.on()
-            #wait for actuator to move spouts forward
-            self.time_intervals(interval_ms=100)
-
-            self.actuator1ForwardPin.off()
-            time1 = utime.ticks_ms()
-            time2 = utime.ticks_ms()
-            lick1Status = 0
-            lick2Status = 0
-            intervalms = 2000
-            while time2 - time1 < intervalms:
-                time2 = utime.ticks_ms()
-                lick1Status = self.lickSensor1Pin.value()
-                lick2Status = self.lickSensor2Pin.value()
-                if lick1Status == 1:
-                    
-                    self.solenoid1Pin.on()
-                    self.time_intervals(interval_ms=100)
-                    self.solenoid1Pin.off()
-                if lick2Status == 1:
-                    self.solenoid2Pin.on()
-                    self.time_intervals(interval_ms=100)
-                    self.solenoid2Pin.off()
-    
-    def test_serial(self):
-        pass
 
     def run_task1(self):
         while self.trial <= self.numberOfTrials:
@@ -129,6 +101,7 @@ class task1:
             while stimOn == 0:
                 #stimulus still running
                 stimOn = self.uart.any()
+            read = self.uart.read()
             self.stimTriggerPin.off()
             
             
@@ -205,7 +178,7 @@ class task1:
         buf=bytearray(2)
         buf[0]=(value >> 8) & 0xFF
         buf[1]=value & 0xFF
-        i2c.writeto(0x62,buf)
+        self.i2c.writeto(self.i2cAdd,buf)
     #example DAC
     #self.writeToDac(2048)
 
