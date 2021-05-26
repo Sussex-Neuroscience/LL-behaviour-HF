@@ -2,74 +2,65 @@ import utime
 import urandom
 from machine import Pin
 from machine import I2C
-
+#import array
 class Tests:
     def __init__(self):
-        # ports
-        self.lickSensor1 = 1
-        self.lickSensor2 = 4
-        self.actuator1Forward = 2
-        self.actuator1Backward = 15 # see if this conflicts with i2c
-        self.solenoid1 = 16
-        self.solenoid2 = 19
-        self.stimTrigger = 7
+
         self.stimIndValue = 0.1
         self.lickSensor1Ind = 0.1
         self.lickSensor2Ind = 0.2
         self.solenoid1Ind = 0.4
         self.solenoid2Ind = 0.8
         
-        #self.monitor1 = 8
-        #self.monitor2 = 9
-        #self.i2c=I2C(0, scl=Pin(14), sda=Pin(15))
+        #self.monitor1 = 998
+        #self.monitor2 = 999
+
+        #self.i2c=I2C(0, scl=Pin(10), sda=Pin(9))
         #self.i2cAdd = self.i2c.scan()
 
         # set the "direction" of the ports
-        self.lickSensor1Pin = Pin(self.lickSensor1, Pin.IN)#, Pin.PULL_DOWN)
-        #self.lickSensor2Pin = Pin(self.lickSensor2, Pin.IN)#, Pin.PULL_DOWN)
-        #self.actuator1ForwardPin = Pin(self.actuator1Forward, Pin.OUT)
-        #self.actuator1BackwardPin = Pin(self.actuator1Backward, Pin.OUT)
-        #self.solenoid1Pin = Pin(self.solenoid1, Pin.OUT)
-        #self.solenoid2Pin = Pin(self.solenoid2, Pin.OUT)
-        #self.stimTriggerPin = Pin(self.stimTrigger, Pin.OUT)
-        #self.monitor1Pin = Pin(self.monitor1, Pin.OUT)
-        #self.monitor2Pin = Pin(self.monitor2, Pin.OUT)
+        self.lickSensor1Pin = Pin(5, Pin.IN)#, Pin.PULL_DOWN)
+        self.lickSensor2Pin = Pin(18, Pin.IN)#, Pin.PULL_DOWN)
+        self.actuator1ForwardPin = Pin(2, Pin.OUT)
+        self.actuator1BackwardPin = Pin(15, Pin.OUT)
+        self.solenoid1Pin = Pin(16, Pin.OUT)
+        self.solenoid2Pin = Pin(19, Pin.OUT)
+        self.stimTriggerPin = Pin(20, Pin.OUT)
+        
+        ##self.monitor1Pin = Pin(self.monitor1, Pin.OUT)
+        ##self.monitor2Pin = Pin(self.monitor2, Pin.OUT)
 
 
         #turn everything off at the beginning
-        #self.actuator1ForwardPin.off()
-        #self.actuator1BackwardPin.off()
-        #self.solenoid1Pin.off()
-        #self.solenoid2Pin.off()
-        #self.stimTriggerPin.off()
-        #self.monitor1Pin.off()
-        #self.monitor2Pin.off()
+        self.actuator1ForwardPin.value(0)
+        self.actuator1BackwardPin.value(0)
+        self.solenoid1Pin.value(0)
+        self.solenoid2Pin.value(0)
+        self.stimTriggerPin.value(0)
+        ##self.monitor1Pin.off()
+        ##self.monitor2Pin.off()
 
         # set a seed for a random number generator (fixing the seed will allow for )
         # or make a list with the order of presentation in the monitors
         # time/interval variables
         self.iti = 5000  # inter trial interval in ms
-        self.baseline = (
-            10000  # time to wait at the beginning of session to record baseline
-        )
+        self.baseline = 10000  # time to wait at the beginning of session to record baseline
         self.stimDuration = 5000  # stimulus presentation duration
-        self.responseWindowDuration = (
-            2000  # time window to respond after stim presentation
-        )
-
+        self.responseWindowDuration = 2000  # time window to respond after stim presentation
         self.rewardDuration = 1000  # duration the solenoid valves will stay in open state, which ends up being the amount of water offered
-        self.numberOfTrials = (
-            100  # the number of trials that will be presented to the animals
-        )
+        self.numberOfTrials = 100  # the number of trials that will be presented to the animals
+        
         self.trial = 1  # the current trial
 
         #create array with indication on which monitor should be on.
         #this should be a pseudorandom way
         #set a seed so that all the time the random order is the same 
         urandom.seed(42)
-        self.monitorOrder = list()
+
+        #self.monitorOrder = [0]*self.numberOfTrials
+
         #for i in range(self.numberOfTrials):
-        #    self.monitorOrder.append(urandom.randint(0,1))
+        #    self.monitorOrder[i]=self.monitorOrder[i]+urandom.randint(0,1)
         
         #print("monitor order")
         #print(self.monitorOrder)
