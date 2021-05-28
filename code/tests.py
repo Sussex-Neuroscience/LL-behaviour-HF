@@ -26,8 +26,10 @@ class Tests:
         self.actuator1ForwardPin = Pin(2, Pin.OUT)
         self.actuator1BackwardPin = Pin(15, Pin.OUT)
         self.solenoid1Pin = Pin(16, Pin.OUT)
+        self.solenoid11Pin = Pin(17, Pin.OUT)
         self.solenoid2Pin = Pin(19, Pin.OUT)
-        self.stimTriggerPin = Pin(27, Pin.OUT)
+        self.solenoid22Pin = Pin(21, Pin.OUT)
+        self.stimTriggerPin = Pin(22, Pin.OUT)
         
         ##self.monitor1Pin = Pin(self.monitor1, Pin.OUT)
         ##self.monitor2Pin = Pin(self.monitor2, Pin.OUT)
@@ -37,7 +39,9 @@ class Tests:
         self.actuator1ForwardPin.value(0)
         self.actuator1BackwardPin.value(0)
         self.solenoid1Pin.value(0)
+        self.solenoid11Pin.value(0)
         self.solenoid2Pin.value(0)
+        self.solenoid22Pin.value(0)
         self.stimTriggerPin.value(0)
         
         ##self.monitor1Pin.off()
