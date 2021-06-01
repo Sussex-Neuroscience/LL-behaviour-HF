@@ -1,124 +1,143 @@
 import utime
 from machine import Pin
-from machine import UART
-from machine import I2C
-
+#from machine import UART
+#from machine import I2C
+from machine import Pin
+#from machine import I2C
+from machine import SoftI2C
 
 import urandom
 
-class task1:
+class Task1:
     def __init__(self):
-        # ports
-        self.lickSensor1 = 0
-        self.lickSensor2 = 4
-        self.actuator1Forward = 2
-        self.actuator1Backward = 15
-        self.solenoid1 = 16
-        self.solenoid2 = 19
-        self.stimTrigger = 7
-        #self.stimIndValue = 0.1
-        self.lickSensor1Ind = 0.1
-        self.lickSensor2Ind = 0.2
+
+        self.stimIndValue = 0.1
+        self.stimIndValue = self.volt2Int(volt = self.stimIndValue)
+        self.lickSensor1Ind = 0.2
+        self.lickSensor1Ind = self.volt2Int(volt = self.lickSensor1Ind)
         self.solenoid1Ind = 0.4
-        self.solenoid2Ind = 0.8
+        self.solenoid1Ind = self.volt2Int(volt = self.solenoid1Ind)
+        self.lickSensor2Ind = 0.8
+        self.lickSensor2Ind = self.volt2Int(volt = self.lickSensor2Ind)
+        self.solenoid2Ind = 1.6
+        self.solenoid2Ind = self.volt2Int(volt = self.solenoid2Ind)
         
-        #self.monitor1 = 8
-        #self.monitor2 = 9
-        #i2c initialization
-        self.i2c=I2C(0, scl = Pin(14), sda = Pin(15),  freq=400000)
+        #self.monitor1 = 998
+        #self.monitor2 = 999
+        self.i2c = SoftI2C(scl=Pin(12), sda=Pin(13), freq=100000)
+
+        #self.i2c=SoftI2C(scl=Pin(9), sda=Pin(10))
         self.i2cAdd = self.i2c.scan()
 
         # set the "direction" of the ports
-        self.lickSensor1Pin = Pin(self.lickSensor1, Pin.IN, Pin.PULL_DOWN)
-        self.lickSensor2Pin = Pin(self.lickSensor2, Pin.IN, Pin.PULL_DOWN)
-        self.actuator1ForwardPin = Pin(self.actuator1Forward, Pin.OUT)
-        self.actuator1BackwardPin = Pin(self.actuator1Backward, Pin.OUT)
-        self.solenoid1Pin = Pin(self.solenoid1, Pin.OUT)
-        self.solenoid2Pin = Pin(self.solenoid2, Pin.OUT)
-        self.stimTriggerPin = Pin(self.stimTrigger, Pin.OUT)
-        #self.monitor1Pin = Pin(self.monitor1, Pin.OUT)
-        #self.monitor2Pin = Pin(self.monitor2, Pin.OUT)
+        self.lickSensor1Pin = Pin(5, Pin.IN, Pin.PULL_DOWN)
+        self.lickSensor2Pin = Pin(18, Pin.IN, Pin.PULL_DOWN)
+        self.actuator1ForwardPin = Pin(2, Pin.OUT)
+        self.actuator1BackwardPin = Pin(15, Pin.OUT)
+        self.solenoid1Pin = Pin(16, Pin.OUT)
+        self.solenoid11Pin = Pin(17, Pin.OUT)
+        self.solenoid2Pin = Pin(19, Pin.OUT)
+        self.solenoid22Pin = Pin(21, Pin.OUT)
+        self.stimTriggerPin = Pin(23, Pin.OUT)
+        self.twopPin = Pin(14, Pin.OUT)
+        self.monitorSidePin = Pin(22,Pin.OUT)
+        
+        ##self.monitor1Pin = Pin(self.monitor1, Pin.OUT)
+        ##self.monitor2Pin = Pin(self.monitor2, Pin.OUT)
 
 
         #turn everything off at the beginning
-        self.actuator1ForwardPin.off()
-        self.actuator1BackwardPin.off()
-        self.solenoid1Pin.off()
-        self.solenoid2Pin.off()
-        #self.stimTriggerPin.off()
-        #self.monitor1Pin.off()
-        #self.monitor2Pin.off()
+        self.actuator1ForwardPin.value(0)
+        self.actuator1BackwardPin.value(0)
+        self.solenoid1Pin.value(0)
+        self.solenoid11Pin.value(0)
+        self.solenoid2Pin.value(0)
+        self.solenoid22Pin.value(0)
+        self.stimTriggerPin.value(0)
 
-        # set a seed for a random number generator (fixing the seed will allow for )
-        # or make a list with the order of presentation in the monitors
+
+        
+
+        self.twopPin.value(0)
+        self.monitorSidePin.value(0)
+        ##self.monitor1Pin.off()
+        ##self.monitor2Pin.off()
+
+        
         # time/interval variables
         self.iti = 5000  # inter trial interval in ms
-        self.baseline = (
-            10000  # time to wait at the beginning of session to record baseline
-        )
+        self.baseline = 10000  # time to wait at the beginning of session to record baseline
         self.stimDuration = 5000  # stimulus presentation duration
-        self.responseWindowDuration = (
-            2000  # time window to respond after stim presentation
-        )
-
+        self.responseWindowDuration = 2000  # time window to respond after stim presentation
         self.rewardDuration = 1000  # duration the solenoid valves will stay in open state, which ends up being the amount of water offered
-        self.numberOfTrials = (
-            100  # the number of trials that will be presented to the animals
-        )
+        self.numberOfTrials = 100  # the number of trials that will be presented to the animals
+        
         self.trial = 1  # the current trial
 
         #create array with indication on which monitor should be on.
         #this should be a pseudorandom way
         #set a seed so that all the time the random order is the same 
         urandom.seed(42)
-        self.monitorOrder = list()
+
+        self.monitorOrder = [0]*self.numberOfTrials
+
         for i in range(self.numberOfTrials):
-            self.monitorOrder.append(urandom.randint(0,1))
+            self.monitorOrder[i]=self.monitorOrder[i]+urandom.randint(0,1)
         
-
-            
-        
-        #initialize serial port 1 for communication with host pc
-        self.uart = UART(0, 9600)                         # init with 9600 baudrate
-
+        #print("monitor order")
+        #print(self.monitorOrder)
 
     def run_task1(self):
+        #self.stimTriggerPin.value(1)
+        #self.time_intervals( interval_ms=1000)
+        #self.stimTriggerPin.value(0)
+        self.twopPin.value(1)
+
         while self.trial <= self.numberOfTrials:
             # if it is the first trial, then wait for the baseline activity measurement
             #ANALOG OUT = 0
+            
             if self.trial == 1:
                 self.time_intervals(interval_ms=self.baseline)
 
             #####ANALOG OUT = STIMULATION ON
-        
-            #need to send a serial signal so that the stimulation PC turns on the monitors
+            value = self.volt2Int(volt = self.stimIndValue)
+            #print("value: "+str(value[0]))
+            #self.writeToDac(value = value[0])
+            
             #start stimulation
             monitor = self.monitorOrder[self.trial]
-            self.uart.write(monitor)
-            self.stimTriggerPin.on()
+            self.monitorSidePin.value(monitor)
+            self.stimTriggerPin.value(1) 
+            print("stim on")
+            
             timeWindow = utime.ticks_ms()
-            stimOn = self.uart.any()
-            while stimOn == 0:
+            #stimOn = self.uart.any()
+            #while stimOn == 0:
                 #stimulus still running
-                stimOn = self.uart.any()
-            read = self.uart.read()
-            self.stimTriggerPin.off()
+            #    stimOn = self.uart.any()
+            #read = self.uart.read()
+
             
+
             
-            #while timeWindow<self.stimDuration:
-            #    self.time_intervals(interval_ms=5)
-                
+            while timeWindow<self.stimDuration:
+                self.time_intervals(interval_ms=10)
+                print("counting stim time")
+            
+            self.stimTriggerPin.value(0)    
 
             ##### ANALOG OUT = STIMULATION OFF
-
+            value = self.volt2Int(volt = 0)
+            #self.writeToDac(value = value)
 
             # once stimulation is done, start the actuators
             self.actuator1ForwardPin.on()
             #wait for actuator to move spouts forward
-            self.time_intervals(interval_ms=100)
+            self.time_intervals(interval_ms=500)
 
             self.actuator1ForwardPin.off()
-
+            
             timeWindow = utime.ticks_ms()
             
             correct = 0
@@ -129,10 +148,14 @@ class task1:
                 lick1Status = self.lickSensor1Pin.value()
                 lick2Status = self.lickSensor2Pin.value()
                 if lick1Status == 1 and monitor == 0:
+                    value = self.volt2Int(volt = self.lickSensor1Ind)
+                    #self.writeToDac(value = value)
                     correct = 1
                     solenoid1 = 1
                     break
                 elif lick2Status == 1 and monitor == 1:
+                    value = self.volt2Int(volt = self.lickSensor2Ind)
+                    #self.writeToDac(value = value)
                     correct = 1
                     solenoid2 = 1
                     break
@@ -140,19 +163,10 @@ class task1:
                     correct = 0
                     solenoid1 = 0
                     solenoid2 = 0
-                    
-                self.actuator1BackwardPin.on()
-                
-                #wait for actuator to move spouts backward
-                self.time_intervals(interval_ms=100)
-                
-                self.actuator1BackwardPin.off()
-                timeWindow = utime.ticks_ms()
-                #break
-                
-            
+
             if correct == 1:
                 if solenoid1 == 1:
+                    
                     self.solenoid1Pin.on()
                     self.time_intervals(interval_ms=100)
                     self.solenoid1Pin.off()
@@ -161,12 +175,25 @@ class task1:
                     self.time_intervals(interval_ms=100)
                     self.solenoid2Pin.off()
 
+
+                self.actuator1BackwardPin.value(1)
+                
+                #wait for actuator to move spouts backward
+                self.time_intervals(interval_ms=500)
+                
+                self.actuator1BackwardPin.value(0)
+                timeWindow = utime.ticks_ms()
+                #break
+                
+            
+
                 
         
         
             # after trial is done, start iti
             self.time_intervals(interval_ms=self.iti)
             self.trial = self.trial + 1
+            print("next trial " + str(self.trial))
 
     def time_intervals(self, interval_ms=100):
         time1 = utime.ticks_ms()
@@ -179,6 +206,14 @@ class task1:
         buf[0]=(value >> 8) & 0xFF
         buf[1]=value & 0xFF
         self.i2c.writeto(self.i2cAdd,buf)
+    
+    def volt2Int(self, volt=0, minI = 0, maxI=4095, minV=0, maxV=5):
+        deltaI = maxI - minI
+        deltaV = maxV - minV
+        value = (deltaI * (volt - minI) / deltaV) + minV 
+        value = round(value)
+        return value
+
     #example DAC
     #self.writeToDac(2048)
 

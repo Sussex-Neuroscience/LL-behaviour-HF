@@ -8,10 +8,10 @@ class Tests:
     def __init__(self):
 
         self.stimIndValue = 0.1
-        self.lickSensor1Ind = 0.1
-        self.lickSensor2Ind = 0.2
-        self.solenoid1Ind = 0.4
-        self.solenoid2Ind = 0.8
+        self.lickSensor1Ind = 0.2
+        self.lickSensor2Ind = 0.4
+        self.solenoid1Ind = 0.8
+        self.solenoid2Ind = 1.6
         
         #self.monitor1 = 998
         #self.monitor2 = 999
