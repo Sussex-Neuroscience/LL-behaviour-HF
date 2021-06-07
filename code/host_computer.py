@@ -26,7 +26,8 @@ labjack = u6.U6()
 
 
 #import csv
-
+#make a list to store the monitor order in the trials:
+monitorOrder = list()
 
 timewave = []
 timex = []
@@ -35,15 +36,15 @@ timex = []
 # setup labjack U6 --> could this be made into variables or a little function for reading easiness?
 # something like:
 optoChannel = 0
-twoPtrigger = 1
+#twoPtrigger = 1
 pupilCamera = 2
-screen = 3
+#screen = 3
 
 # then everytime the setOutputVoltageFIO is called, one could call by the names instead of numbers
 labjack.setDOState(optoChannel, 0)  # channel for opto  
-labjack.setDOState(twoPtrigger, 0)  # channel for 2P trigger (on during all experiment)  
+#labjack.setDOState(twoPtrigger, 0)  # channel for 2P trigger (on during all experiment)  
 labjack.setDOState(pupilCamera, 0)  # channel for pupil camera (1 pulse per frame)  
-labjack.setDOState(screen, 0)  # channel for timewave (on when stim on)  
+#labjack.setDOState(screen, 0)  # channel for timewave (on when stim on)  
 
 # labjack.setOutputVoltageFIO(0,0) # channel for opto
 # labjack.setOutputVoltageFIO(1),0) # channel for 2P trigger (on during all experiment)
@@ -55,10 +56,11 @@ labjack.setDOState(screen, 0)  # channel for timewave (on when stim on)
 
 info = {}
 
-info["trialN"] = 5
+info["trialN"] = 50
 info["RefreshRate"] = 120  # Refresh rate of the monitor, in Hz
 info["PreStim"] = info["RefreshRate"] * 2
-info["StimLength"] = info["RefreshRate"] * 2
+info["StimLength"] = info["RefreshRate"] * 5 #-> is this the correct stim lenght? (originally the code was 2 seconds, but from Sina 
+# description of the task it should be 5 seconds?)
 info["ISI"] = info["RefreshRate"] * 2
 
 info["Orientation"] = 315  # ,180,90,270,45,225,135,315,0 = vertical right
@@ -157,8 +159,10 @@ for thisTrial in range(info["trialN"]):
     
     if labjack.getAIN(1) > 2:
         ranchoice = ran[0]
+        monitorOrder.append(0)
     else:
         ranchoice = ran[1]
+        monitorOrder.append(1)
 
     winran = ranchoice[0]
     gratingran = ranchoice[1]
@@ -167,7 +171,7 @@ for thisTrial in range(info["trialN"]):
     #labjack.setDOState(screen, 0)
     #lock software until stim trigger comes in
     #print str(labjack.getAIN(0))
-    while labjack.getAIN(positiveChannel = 0, gainIndex=0)<2.5:
+    while labjack.getAIN(0)<2.5:
         value1 = labjack.getAIN(0)
         print str(value1)
         print "not in stimulus phase yet"
@@ -192,11 +196,17 @@ for thisTrial in range(info["trialN"]):
         labjack.setDOState(pupilCamera, 1)
         #labjack.setOutputVoltageFIO(screen, 1)
         timewave.append(sizeGrating)
+        dummie = labjack.getAIN(0)
+        if dummie < 2.5:
+            #we are timing things with the ESP32, so if the ESP has finished counting the stimulus time window, 
+            #than we break the for loop and end stimulation
+            break
+
     #ser.write("d")
     labjack.setDOState(optoChannel, 0)
     timex.append(clock.getTime())
 
-
+    #maybe this could be removed, since the ESP32 is doing the time counting of ISI.
     for frameN in range(info["ISI"]):  # add an ISI or post stim interval
         labjack.setDOState(pupilCamera, 0)
         winran.flip()
@@ -204,15 +214,13 @@ for thisTrial in range(info["trialN"]):
         #labjack.setDOState(screen, 0)
         timewave.append(0)
     
-    #if labjack.getAIN(0)<2.5:
-    #    print "stimulus phase over"
-    #    print(str(labjack.getAIN(0)))
-    #    break
 
 labjack.setDOState(pupilCamera, 0)
 labjack.setDOState(optoChannel, 0)
 #labjack.setDOState(screen, 0)
 
 labjack.close()
+print(monitorOrder)
+
 #close serial connection with ESP
 #ser.close()             # close port

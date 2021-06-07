@@ -3,6 +3,7 @@ from machine import Pin
 #from machine import UART
 #from machine import I2C
 from machine import Pin
+#from machine import RTC
 #from machine import I2C
 from machine import SoftI2C
 
@@ -28,6 +29,9 @@ class Task1:
 
         #self.i2c=SoftI2C(scl=Pin(9), sda=Pin(10))
         self.i2cAdd = self.i2c.scan()
+        
+        #write 0 volts to the DAC
+        self.writeToDac(value=0)
 
         # set the "direction" of the ports
         self.lickSensor1Pin = Pin(5, Pin.IN, Pin.PULL_DOWN)
@@ -81,7 +85,7 @@ class Task1:
         #create array with indication on which monitor should be on.
         #this should be a pseudorandom way
         #set a seed so that all the time the random order is the same 
-        urandom.seed(42)
+        #urandom.seed(42)
 
         self.monitorOrder = [0]*self.numberOfTrials
 
@@ -92,15 +96,12 @@ class Task1:
         #print(self.monitorOrder)
 
     def run_task1(self):
-        #self.stimTriggerPin.value(1)
-        #self.time_intervals( interval_ms=1000)
-        #self.stimTriggerPin.value(0)
         self.twopPin.value(1)
 
         while self.trial <= self.numberOfTrials:
             # if it is the first trial, then wait for the baseline activity measurement
             #ANALOG OUT = 0
-            self.writeToDac(value = 0)
+            self.writeToDac(0)
             if self.trial == 1:
                 self.time_intervals(interval_ms=self.baseline)
 
@@ -115,41 +116,34 @@ class Task1:
             self.monitorSidePin.value(monitor)
             self.stimTriggerPin.value(1) 
             print("stim on")
-            
-            #timeWindow = utime.ticks_ms()
-            #stimOn = self.uart.any()
-            #while stimOn == 0:
-                #stimulus still running
-            #    stimOn = self.uart.any()
-            #read = self.uart.read()
 
             
-            self.time_intervals(interval_ms=self.stimDuration)
+            self.time_intervals(interval_ms=self.stimDuration-self.actuatorForwardDuration)
+            print("moving actuator")
+            # once stimulation is close to being done, start the actuator
+            self.actuator1ForwardPin.value(1)
             
-            #while timeWindow<self.stimDuration:
-            #    self.time_intervals(interval_ms=10)
-            #    print("counting stim time")
+            #wait for actuator to move spouts forward
+            self.time_intervals(interval_ms=actuatorForwardDuration)
+
+            self.actuator1ForwardPin.value(0)
             
+
+            
+            #once the actuator is out, we can end the stimulation trigger
             self.stimTriggerPin.value(0)    
 
             ##### ANALOG OUT = STIMULATION OFF
             value = self.volt2Int(volt = 0)
             self.writeToDac(value = value)
 
-            # once stimulation is done, start the actuators
-            self.actuator1ForwardPin.value(1)
-            
-            #wait for actuator to move spouts forward
-            self.time_intervals(interval_ms=500)
-
-            self.actuator1ForwardPin.value(0)
-            
+            #start response window
             timeWindow1 = utime.ticks_ms()
             timeWindow2 = utime.ticks_ms()
             correct = 0
             solenoid1 = 0
             solenoid2 = 0
-            value = 0
+            
 
             while timeWindow2-timeWindow1<self.responseWindowDuration:
                 lick1Status = self.lickSensor1Pin.value()
@@ -157,56 +151,71 @@ class Task1:
                 lick2Status = self.lickSensor2Pin.value()
                 if lick1Status == 1 and monitor == 0:
                     
-                    correct = 1
+                    responseStatus = 1
                     solenoid1 = 1
                     value = value + self.lickSensor1Ind
                     self.writeToDac(value = value)
                     break
+
+                elif lick1Status == 1 and monitor == 1:
+                    responseStatus = 3
+                    break
+                    
                 elif lick2Status == 1 and monitor == 1:
                     value = self.volt2Int(volt = self.lickSensor2Ind)
                     #self.writeToDac(value = value)
-                    correct = 1
+                    responseStatus = 2
                     solenoid2 = 1
                     value = value + self.lickSensor2Ind
                     self.writeToDac(value = value)
                     break
+                
+                elif lick2Status == 1 and monitor == 0:
+                    responseStatus = 4
+                    break
                 else:
-                    correct = 0
+                    responseStatus = 0
                     solenoid1 = 0
                     solenoid2 = 0
                 timeWindow2 = utime.ticks_ms()  
 
             
+            if responseStatus == 0:
+                print("no licks")
 
-
-
-            if correct == 1:
-                if solenoid1 == 1:
-                    print("solenoid1")
-                    self.solenoid1Pin.value(1)
-                    value = self.solenoid1Ind
-                    self.writeToDac(value)
-                    self.time_intervals(interval_ms=self.reward1Duration)
-                    self.solenoid1Pin.value(0)
-                    self.writeToDac(0)
-                if solenoid2 == 1:
-                    print("solenoid2")
-                    self.solenoid2Pin.value(1)
-                    value = self.solenoid2Ind
-                    self.writeToDac(value)
-                    self.time_intervals(interval_ms=self.reward2Duration)
-                    self.solenoid2Pin.value(0)
-                    self.writeToDac(0)
-
-                self.actuator1BackwardPin.value(1)
-                
-                #wait for actuator to move spouts backward
-                self.time_intervals(interval_ms=self.actuatorBackwardDuration)
-                
-                self.actuator1BackwardPin.value(0)
-                #timeWindow = utime.ticks_ms()
-                #break
+            if responseStatus == 1:
+                print("solenoid1")
+                self.solenoid1Pin.value(1)
+                value = value+self.solenoid1Ind
+                self.writeToDac(value)
+                self.time_intervals(interval_ms=self.reward1Duration)
+                self.solenoid1Pin.value(0)
                 self.writeToDac(0)
+            
+            if responseStatus == 2:
+                print("solenoid2")
+                self.solenoid2Pin.value(1)
+                value = value+self.solenoid2Ind
+                self.writeToDac(value)
+                self.time_intervals(interval_ms=self.reward2Duration)
+                self.solenoid2Pin.value(0)
+                self.writeToDac(0)
+`           
+            if responseStatus == 3:
+                print("lick spout 1 error") 
+            if responseStatus == 4:
+                print("lick spout 2 error") 
+            
+            responseStatus = 0
+            self.actuator1BackwardPin.value(1)
+                
+            #wait for actuator to move spouts backward
+            self.time_intervals(interval_ms=self.actuatorBackwardDuration)
+                
+            self.actuator1BackwardPin.value(0)
+            #timeWindow = utime.ticks_ms()
+            #break
+            self.writeToDac(0)
             
 
                 
