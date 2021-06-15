@@ -6,6 +6,7 @@ from __future__ import division  # important
 from psychopy import visual, event, core, data, gui, monitors
 import numpy, random, sys, math
 from psychopy.visual.windowwarp import Warper
+from datetime import datetime
 #import serial
 
 #eventually remove labjack from system
@@ -22,12 +23,6 @@ import u6
 labjack = u6.U6()
 #check wich FIOs are analog and which are digital 
 #configDict = d.configIO()
-
-
-
-#import csv
-#make a list to store the monitor order in the trials:
-monitorOrder = list()
 
 timewave = []
 timex = []
@@ -56,7 +51,7 @@ labjack.setDOState(pupilCamera, 0)  # channel for pupil camera (1 pulse per fram
 
 info = {}
 
-info["trialN"] = 50
+info["trialN"] = 100
 info["RefreshRate"] = 120  # Refresh rate of the monitor, in Hz
 info["PreStim"] = info["RefreshRate"] * 2
 info["StimLength"] = info["RefreshRate"] * 5 #-> is this the correct stim lenght? (originally the code was 2 seconds, but from Sina 
@@ -121,6 +116,21 @@ lengthStimISI = (1 * (info["StimLength"] / info["RefreshRate"])) + (
 lengthEXP = lengthPreStim + nbOfTrials * lengthStimISI
 print ("Experiment Duration = ", str(lengthEXP), "seconds")
 print ("At 5 Hz: ", str(lengthEXP * 6.07), "frames")
+#---------------------------------------------------------------------------------------------------------------
+monitorOrder = list()
+#--------------CREATE FILE -------------------------------------------------------------------------------------
+
+#create a file that will store the monitor side as it gets updated from the ESP32
+timeNow = datetime.now()
+fileName = str(timeNow.year)+"-"+
+           str(timeNow.month)+"-"+
+           str(timeNow.day)+"-"+
+           str(timeNow.hour)+"-"+
+           str(timeNow.minute)+"-"+
+           str(timeNow.second)+".csv"
+
+fid = open(fileName,"a")
+fid.write("monitor side\n")
 
 
 # setup a serial connection with the ESP - this will be used when LabJack is removed from the setup
@@ -146,81 +156,87 @@ for frameN in range(info["PreStim"]):  # Create a prestim
     labjack.setDOState(pupilCamera, 1)
     #labjack.setDOState(screen, 0)
     timewave.append(0)
-
-for thisTrial in range(info["trialN"]):
-    #ADD SUBROUTINE THAT WILL WAIT FOR SERIAL COMMAND FROM ESP32
-    #while ser.available() == 0:
-    #    print("waiting for ESP")
-    #monitorSide = ser.readline()
-    #print("monitor: " + str(monitorSide))
-    # Random screen chosen in each trial
-    ran = [[win, grating], [win2, grating2]]
-    #ranchoice = random.choice(ran)
+try: # try command here to make sure that if there is a keyboard interrupt, than labjack and the opened files are closed.
+    for thisTrial in range(info["trialN"]):
+        #ADD SUBROUTINE THAT WILL WAIT FOR SERIAL COMMAND FROM ESP32
+        #while ser.available() == 0:
+        #    print("waiting for ESP")
+        #monitorSide = ser.readline()
+        #print("monitor: " + str(monitorSide))
+        # Random screen chosen in each trial
+        ran = [[win, grating], [win2, grating2]]
+        #ranchoice = random.choice(ran)
     
-    if labjack.getAIN(1) > 2:
-        ranchoice = ran[0]
-        monitorOrder.append(0)
-    else:
-        ranchoice = ran[1]
-        monitorOrder.append(1)
+        if labjack.getAIN(1) > 2:
+            ranchoice = ran[0]
+            monitorOrder.append(0)
+            fid.write("0\n")
+        else:
+            ranchoice = ran[1]
+            monitorOrder.append(1)
+            fid.write("1\n")
 
-    winran = ranchoice[0]
-    gratingran = ranchoice[1]
+        winran = ranchoice[0]
+        gratingran = ranchoice[1]
 
     
-    #labjack.setDOState(screen, 0)
-    #lock software until stim trigger comes in
-    #print str(labjack.getAIN(0))
-    while labjack.getAIN(0)<2.5:
-        value1 = labjack.getAIN(0)
-        print str(value1)
-        print "not in stimulus phase yet"
-
-    #print "test  "
-    print "Trial number", thisTrial + 1    
-    print "        Size is: ", sizeGrating, "degree"
-    
-    timex.append(clock.getTime())
-    labjack.setDOState(optoChannel, 0)
-
-    for frameN in range(info["StimLength"]):
-        gratingran.setSize(sizeGrating)
-        gratingran.setPhase(
-            info["TF"] / info["RefreshRate"], "+"
-        )  # To get the TF in Hz, divide TF by the refresh rate       # set like this for TF fction of speed:  grating.setPhase(mouse_dX/100,'+')
-        gratingran.ori = info["Orientation"]
-        gratingran.setContrast(info["Contrast"])
-        gratingran.draw()
-        labjack.setDOState(pupilCamera, 0)
-        winran.flip()
-        labjack.setDOState(pupilCamera, 1)
-        #labjack.setOutputVoltageFIO(screen, 1)
-        timewave.append(sizeGrating)
-        dummie = labjack.getAIN(0)
-        if dummie < 2.5:
-            #we are timing things with the ESP32, so if the ESP has finished counting the stimulus time window, 
-            #than we break the for loop and end stimulation
-            break
-
-    #ser.write("d")
-    labjack.setDOState(optoChannel, 0)
-    timex.append(clock.getTime())
-
-    #maybe this could be removed, since the ESP32 is doing the time counting of ISI.
-    for frameN in range(info["ISI"]):  # add an ISI or post stim interval
-        labjack.setDOState(pupilCamera, 0)
-        winran.flip()
-        labjack.setDOState(pupilCamera, 1)
         #labjack.setDOState(screen, 0)
-        timewave.append(0)
+        #lock software until stim trigger comes in
+        #print str(labjack.getAIN(0))
+        while labjack.getAIN(0)<2.5:
+            value1 = labjack.getAIN(0)
+            #print str(value1)
+            print "not in stimulus phase yet"
+
+        #print "test  "
+        print "Trial number", thisTrial + 1    
+        print "        Size is: ", sizeGrating, "degree"
+    
+        timex.append(clock.getTime())
+        labjack.setDOState(optoChannel, 0)
+
+        for frameN in range(info["StimLength"]):
+            gratingran.setSize(sizeGrating)
+            gratingran.setPhase(
+                info["TF"] / info["RefreshRate"], "+")  # To get the TF in Hz, divide TF by the refresh rate       # set like this for TF fction of speed:  grating.setPhase(mouse_dX/100,'+')
+            gratingran.ori = info["Orientation"]
+            gratingran.setContrast(info["Contrast"])
+            gratingran.draw()
+            labjack.setDOState(pupilCamera, 0)
+            winran.flip()
+            labjack.setDOState(pupilCamera, 1)
+            #labjack.setOutputVoltageFIO(screen, 1)
+            timewave.append(sizeGrating)
+            dummie = labjack.getAIN(0)
+            if dummie < 2.5:
+                #we are timing things with the ESP32, so if the ESP has finished counting the stimulus time window, 
+                #than we break the for loop and end stimulation
+                break
+
+        #ser.write("d")
+        labjack.setDOState(optoChannel, 0)
+        timex.append(clock.getTime())
+
+        #maybe this could be removed, since the ESP32 is doing the time counting of ISI.
+        for frameN in range(info["ISI"]):  # add an ISI or post stim interval
+            labjack.setDOState(pupilCamera, 0)
+            winran.flip()
+            labjack.setDOState(pupilCamera, 1)
+            #labjack.setDOState(screen, 0)
+            timewave.append(0)
     
 
-labjack.setDOState(pupilCamera, 0)
-labjack.setDOState(optoChannel, 0)
-#labjack.setDOState(screen, 0)
+    labjack.setDOState(pupilCamera, 0)
+    labjack.setDOState(optoChannel, 0)
+    #labjack.setDOState(screen, 0)
 
-labjack.close()
-print(monitorOrder)
+    labjack.close()
+    print(monitorOrder)
+    fid.close()
 
-#close serial connection with ESP
-#ser.close()             # close port
+except KeyboardInterrupt:#catch if there is a ctrl-c event
+    labjack.close()
+    fid.close()
+
+    #close serial connection with ESP
+    #ser.close()             # close port

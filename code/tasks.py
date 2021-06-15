@@ -29,15 +29,15 @@ class Task1:
 
         #self.i2c=SoftI2C(scl=Pin(9), sda=Pin(10))
         self.i2cAdd = self.i2c.scan()
-        
+        self.writeToDac(value=0x60)
         #write 0 volts to the DAC
         self.writeToDac(value=0)
 
         # set the "direction" of the ports
         self.lickSensor1Pin = Pin(5, Pin.IN, Pin.PULL_DOWN)
         self.lickSensor2Pin = Pin(18, Pin.IN, Pin.PULL_DOWN)
-        self.actuator1ForwardPin = Pin(2, Pin.OUT)
-        self.actuator1BackwardPin = Pin(15, Pin.OUT)
+        self.actuator1ForwardPin = Pin(15, Pin.OUT)
+        self.actuator1BackwardPin = Pin(2, Pin.OUT)
         self.solenoid1Pin = Pin(16, Pin.OUT)
         self.solenoid11Pin = Pin(17, Pin.OUT)
         self.solenoid2Pin = Pin(19, Pin.OUT)
@@ -74,8 +74,8 @@ class Task1:
         self.baseline = 10000  # time to wait at the beginning of session to record baseline
         self.stimDuration = 5000  # stimulus presentation duration
         self.responseWindowDuration = 2000  # time window to respond after stim presentation
-        self.actuatorForwardDuration = 500 #how much time the actuator spends moving forward
-        self.actuatorBackwardDuration = 500 #how much time the actuator spends moving forward
+        self.actuatorForwardDuration = 400 #how much time the actuator spends moving forward
+        self.actuatorBackwardDuration = 400 #how much time the actuator spends moving forward
         self.reward1Duration = 1000  # duration the solenoid valves will stay in open state, which ends up being the amount of water offered
         self.reward2Duration = 1000  # duration the solenoid valves will stay in open state, which ends up being the amount of water offered
         self.numberOfTrials = 100  # the number of trials that will be presented to the animals
@@ -101,7 +101,7 @@ class Task1:
         while self.trial <= self.numberOfTrials:
             # if it is the first trial, then wait for the baseline activity measurement
             #ANALOG OUT = 0
-            self.writeToDac(0)
+            self.writeToDac(value = 0)
             if self.trial == 1:
                 self.time_intervals(interval_ms=self.baseline)
 
@@ -124,11 +124,12 @@ class Task1:
             self.actuator1ForwardPin.value(1)
             
             #wait for actuator to move spouts forward
-            self.time_intervals(interval_ms=actuatorForwardDuration)
+            self.time_intervals(interval_ms=self.actuatorForwardDuration)
 
             self.actuator1ForwardPin.value(0)
             
-
+            #pause so that there is no false triggering of the lick sensors.
+            self.time_intervals(interval_ms=100)
             
             #once the actuator is out, we can end the stimulation trigger
             self.stimTriggerPin.value(0)    
@@ -140,9 +141,9 @@ class Task1:
             #start response window
             timeWindow1 = utime.ticks_ms()
             timeWindow2 = utime.ticks_ms()
-            correct = 0
-            solenoid1 = 0
-            solenoid2 = 0
+            responseStatus = 0
+            #solenoid1 = 0
+            #solenoid2 = 0
             
 
             while timeWindow2-timeWindow1<self.responseWindowDuration:
@@ -152,7 +153,7 @@ class Task1:
                 if lick1Status == 1 and monitor == 0:
                     
                     responseStatus = 1
-                    solenoid1 = 1
+                    #solenoid1 = 1
                     value = value + self.lickSensor1Ind
                     self.writeToDac(value = value)
                     break
@@ -165,7 +166,7 @@ class Task1:
                     value = self.volt2Int(volt = self.lickSensor2Ind)
                     #self.writeToDac(value = value)
                     responseStatus = 2
-                    solenoid2 = 1
+                    #solenoid2 = 1
                     value = value + self.lickSensor2Ind
                     self.writeToDac(value = value)
                     break
@@ -175,8 +176,8 @@ class Task1:
                     break
                 else:
                     responseStatus = 0
-                    solenoid1 = 0
-                    solenoid2 = 0
+                    #solenoid1 = 0
+                    #solenoid2 = 0
                 timeWindow2 = utime.ticks_ms()  
 
             
@@ -200,7 +201,7 @@ class Task1:
                 self.time_intervals(interval_ms=self.reward2Duration)
                 self.solenoid2Pin.value(0)
                 self.writeToDac(0)
-`           
+          
             if responseStatus == 3:
                 print("lick spout 1 error") 
             if responseStatus == 4:
@@ -245,6 +246,20 @@ class Task1:
         value = round(value)
         return value
 
+    def setDAC2start0(self):
+        '''this function writes data to the EEPROM of the MCP4725 DAC board
+        in this specific case we want to set the board to always output 0 when
+        it is first starting, or in low power mode.
+        - in principle this only needs to be run once
+        - it is also possible to change this so that the DAC will output another 
+        specified value different than 0 when first started and/or low power mode.
+        '''
+        buf = bytearray()
+        buf.append(0x60)
+        buf.append(0)
+        buf.append(0)
+        self.i2c.writeto(self.i2cAdd[0],buf)
+        return
     #example DAC
     #self.writeToDac(2048)
 
