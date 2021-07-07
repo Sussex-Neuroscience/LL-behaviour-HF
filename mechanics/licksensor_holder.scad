@@ -22,16 +22,16 @@ tol = 0.1;
 
 module actuator_fit(){
     difference(){
-    cube([actuatorX+2+2*tol,actuatorY+2+2*tol,actuatorZ+2],center=true);
+    cube([actuatorX+2+2*tol,actuatorY+2+2*tol,actuatorZ+10],center=true);
 
     translate([0,0,-slitZ-1]){
         union(){
-        cube([actuatorX+2*tol,actuatorY+2*tol,actuatorZ+2*tol],center = true);
+        cube([actuatorX+0.5+2*tol,actuatorY+0.5+2*tol,actuatorZ+2*tol],center = true);
             translate([0,0,(actuatorZ+slitZ)/2]){
             cube([slitX+2*tol,slitY+2*tol,slitZ],center = true);
     
             rotate([0,90,0]){
-                translate([1.5,0,-screwL/2]){
+                translate([2,0,-screwL/2]){
                 cylinder(d=screwD,h=screwL);
                 }//end translate
             }//end rotate
