@@ -157,10 +157,12 @@ class Task1:
 
             while timeWindow2-timeWindow1<self.responseWindowDuration:
                 lick1Status = self.lickSensor1Pin.value()
-                print(str(lick1Status))
+                #print(str(lick1Status))
                 lick2Status = self.lickSensor2Pin.value()
                 if lick1Status == 1 and monitor == 0:
-                    
+                    self.writeToDac(self.lickSensor1Ind)
+                    self.time_intervals(interval_ms=5)                    
+                    self.writeToDac(0)
                     responseStatus = 1
                     #solenoid1 = 1
                     #value = self.volt2Int(volt = self.lickSensor1Ind)
@@ -169,10 +171,16 @@ class Task1:
                     break
 
                 elif lick1Status == 1 and monitor == 1:
+                    self.writeToDac(self.lickSensor1Ind)
+                    self.time_intervals(interval_ms=5)                    
+                    self.writeToDac(0)
                     responseStatus = 3
                     break
                     
                 elif lick2Status == 1 and monitor == 1:
+                    self.writeToDac(self.lickSensor2Ind)
+                    self.time_intervals(interval_ms=5)                    
+                    self.writeToDac(0)
                     #value = self.volt2Int(volt = self.lickSensor2Ind)
                     self.writeToDac(value = self.lickSensor2Ind)
                     responseStatus = 2
@@ -182,6 +190,9 @@ class Task1:
                     break
                 
                 elif lick2Status == 1 and monitor == 0:
+                    self.writeToDac(self.lickSensor2Ind)
+                    self.time_intervals(interval_ms=5)                    
+                    self.writeToDac(0)
                     responseStatus = 4
                     break
                 else:
