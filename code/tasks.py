@@ -11,7 +11,7 @@ import urandom
 
 class Task1:
     def __init__(self):
-
+        #set different analog voltage out for monitoring what was on/when
         self.stimIndValue = 3.5
         self.stimIndValue = self.volt2Int(volt = self.stimIndValue)
         self.lickSensor1Ind = 0.5
@@ -69,7 +69,7 @@ class Task1:
         ##self.monitor1Pin.off()
         ##self.monitor2Pin.off()
 
-        
+
         # time/interval variables
         self.iti = 5000  # inter trial interval in ms
         self.baseline = 10000  # time to wait at the beginning of session to record baseline
@@ -111,6 +111,13 @@ class Task1:
                 print("monitor: " + str(monitor) )
                 self.monitorSidePin.value(monitor)
                 self.time_intervals(interval_ms=10)
+
+                #variables to monitor animal performance over time
+                self.correctLick1Counter = 0
+                self.correctLick2Counter = 0
+                self.noLickCounter = 0
+                self.incorrectLick1Counter = 0
+                self.incorrectLick2Counter = 0
 
             #####ANALOG OUT = STIMULATION ON
             #value = self.volt2Int(volt = self.stimIndValue)
@@ -203,6 +210,7 @@ class Task1:
 
             
             if responseStatus == 0:
+                self.noLickCounter = self.noLickCounter+1
                 print("no licks")
 
             if responseStatus == 1:
@@ -213,6 +221,8 @@ class Task1:
                 self.time_intervals(interval_ms=self.reward1Duration)
                 self.solenoid1Pin.value(0)
                 self.writeToDac(0)
+                self.correctLick1Counter = self.correctLick1Counter + 1
+                
             
             if responseStatus == 2:
                 print("solenoid2")
@@ -222,14 +232,29 @@ class Task1:
                 self.time_intervals(interval_ms=self.reward2Duration)
                 self.solenoid2Pin.value(0)
                 self.writeToDac(0)
+                self.correctLick2Counter = self.correctLick2Counter + 1
           
             if responseStatus == 3:
                 print("lick spout 1 error") 
+                self.incorrectLick1Counter = self.incorrectLick1Counter + 1
             if responseStatus == 4:
                 print("lick spout 2 error") 
+                self.incorrectLick2Counter = self.incorrectLick2Counter + 1
             
             responseStatus = 0
-
+            correctTrials = self.correctLick1Counter+self.correctLick2Counter
+            incorrectTrials = self.incorrectLick1Counter+self.incorrectLick2Counter
+            print("trials = " + str(self.trial))
+            print("no lick = " + str(self.noLickCounter))
+            print("correct trials = " + str(correctTrials))
+            print("incorrect trials = " + str(incorrectTrials)+"\n")
+            
+            print("lick spout 1 correct = " + str(self.correctLick1Counter))
+            print("lick spout 2 correct = " + str(self.correctLick2Counter)+"\n")
+            
+            print("lick spout 1 incorrect = " + str(self.incorrectLick1Counter))
+            print("lick spout 2 incorrect = " + str(self.incorrectLick2Counter)+"\n")
+                        
             self.time_intervals(interval_ms=200)
 
             self.actuator1BackwardPin.value(1)
