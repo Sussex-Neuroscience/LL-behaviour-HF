@@ -79,6 +79,7 @@ class Task1:
         self.actuatorBackwardDuration = 400 #how much time the actuator spends moving forward
         self.reward1Duration = 1000  # duration the solenoid valves will stay in open state, which ends up being the amount of water offered
         self.reward2Duration = 1000  # duration the solenoid valves will stay in open state, which ends up being the amount of water offered
+        self.moveBackDelay = 300
         self.numberOfTrials = 100  # the number of trials that will be presented to the animals
         
         self.trial = 1  # the current trial
@@ -255,7 +256,7 @@ class Task1:
             print("lick spout 1 incorrect = " + str(self.incorrectLick1Counter))
             print("lick spout 2 incorrect = " + str(self.incorrectLick2Counter)+"\n")
                         
-            self.time_intervals(interval_ms=200)
+            self.time_intervals(interval_ms=self.moveBackDelay)
 
             self.actuator1BackwardPin.value(1)
                 

@@ -1,9 +1,9 @@
 #import machine 
-import main
-import tests
-import tasks
+#import main
+#import tests
+#import tasks
 
-run = tasks.Task1()
+#run = tasks.Task1()
 
 
 
