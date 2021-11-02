@@ -33,6 +33,7 @@ holderWall = 2;
 
 //information about nut and screws that are used to fix things
 screwDia=3.95;
+
 nutDia = 6.91;
 nutHei = 3.25;
 
@@ -121,10 +122,10 @@ module servo_fit(){
     }//end difference
     
     
-    translate([(servoX)+gearW/2+railH,0,0]){
-        cube([5,servoY+2*holderWall,servoZ+gearW]);
-    translate([-7,0,0])
-        cube([8,servoY+2*holderWall,5]);
+    translate([(servoX)+gearW/2+railH+3,0,0]){
+        cube([4,servoY+2*holderWall,servoZ+gearW+2*holderWall]);
+    translate([-10,0,0])
+        cube([12,servoY+2*holderWall,5]);
         }//end translate
      
     
@@ -145,6 +146,15 @@ module linear_rail_pos(leng = railL){
     cube([15,10,3.5]);
         }//end translate
 }//end difference
+translate([leng/2,8,gearW]){
+    
+difference(){
+cylinder(d=23,h=2,center=true);
+cylinder(d=screwDia+2*tol,h=20,center=true);
+}//end difference
+translate([-23/2,-23/2-1,-2])
+cube([8,12,3]);
+}//end translate
 /*
 translate([-leng/2-2,-railH,-2]){
     cube([leng,1,gearW+4]);
@@ -218,26 +228,27 @@ poleFit();
 /*
 difference(){
 servo_fit();
-    */
+   
 rotate([0,0,90]){
-translate([-5,-servoX-12.75,servoZ-4]){
+translate([-5,-servoY-holderWall-5,servoZ+2*holderWall]){
     difference(){
     cube([40,6,gearW+8]);
         
-    translate([20,railH+5-2,(gearW-3)/2]){
+    translate([20,railH+5-2,(gearW)/2]){
         linear_rail_neg(leng = 45);
     }//end translate
     }//end difference
+
 }//end translate
 }//end rotate
-//}//end difference
-
-translate([10,0,0])
-translate([(servoX)+gearW/2,servoY/2,servoZ])
-rotate([0,0,90])
-linear_rail_pos(leng = 40);
+}//end difference
+*/
+//translate([2,0,0])
+//translate([(servoX)+gearW/2,servoY/2,servoZ+holderWall])
+//rotate([0,0,90])
+linear_rail_pos(leng = 50);
 //translate([0,0,0])
 //servo_fit();
-//translate([(servoX+holderWall)/2,(servoY+holderWall)/2,servoZ])
+//translate([(servoX+2*holderWall)/2,(servoY+2*holderWall)/2,servoZ+holderWall])
 //gear();
 
