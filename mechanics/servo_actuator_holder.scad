@@ -146,15 +146,16 @@ module linear_rail_pos(leng = railL){
     cube([15,10,3.5]);
         }//end translate
 }//end difference
-translate([leng/2,8,gearW]){
-    
-difference(){
-cylinder(d=23,h=2,center=true);
-cylinder(d=screwDia+2*tol,h=20,center=true);
-}//end difference
-translate([-23/2,-23/2-1,-2])
-cube([8,12,3]);
-}//end translate
+    translate([leng/2,6.5,gearW]){
+ 
+        difference(){
+            cylinder(d=23,h=2,center=true);
+            cylinder(d=screwDia+2*tol,h=20,center=true);
+        }//end difference
+    translate([-23/2,-23/2,-2]){
+        cube([8,12,3]);
+    }//end translate
+    }//end translate
 /*
 translate([-leng/2-2,-railH,-2]){
     cube([leng,1,gearW+4]);
