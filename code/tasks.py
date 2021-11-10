@@ -1,5 +1,6 @@
 import utime
 from machine import Pin
+from machine import PWM
 #from machine import UART
 #from machine import I2C
 #
@@ -36,8 +37,17 @@ class Task1:
         # set the "direction" of the ports
         self.lickSensor1Pin = Pin(5, Pin.IN, Pin.PULL_DOWN)
         self.lickSensor2Pin = Pin(18, Pin.IN, Pin.PULL_DOWN)
-        self.actuator1ForwardPin = Pin(15, Pin.OUT)
-        self.actuator1BackwardPin = Pin(2, Pin.OUT)
+        
+        self.servo1Pin = PWM(Pin(2), freq=50)
+        self.servo2Pin = PWM(Pin(15), freq=50)
+        self.servoMax = 50
+        self.servoMin = 0
+        
+        #self.servo1ForwardPin = Pin(15, Pin.OUT)
+        #self.servo1BackwardPin = Pin(2, Pin.OUT)
+        
+        
+        
         self.solenoid1Pin = Pin(16, Pin.OUT)
         self.solenoid11Pin = Pin(17, Pin.OUT)
         self.solenoid2Pin = Pin(19, Pin.OUT)
@@ -53,8 +63,8 @@ class Task1:
 
 
         #turn everything off at the beginning
-        self.actuator1ForwardPin.value(0)
-        self.actuator1BackwardPin.value(0)
+        #self.actuator1ForwardPin.value(0)
+        #self.actuator1BackwardPin.value(0)
         self.solenoid1Pin.value(0)
         self.solenoid11Pin.value(0)
         self.solenoid2Pin.value(0)
@@ -135,14 +145,11 @@ class Task1:
 
             
             self.time_intervals(interval_ms=self.stimDuration-self.actuatorForwardDuration)
-            print("moving actuator")
+            print("moving servos")
             # once stimulation is close to being done, start the actuator
-            self.actuator1ForwardPin.value(1)
+            self. move_servos_forward()       
             
-            #wait for actuator to move spouts forward
-            self.time_intervals(interval_ms=self.actuatorForwardDuration)
-
-            self.actuator1ForwardPin.value(0)
+            
             
             #pause so that there is no false triggering of the lick sensors.
             self.time_intervals(interval_ms=200)
@@ -258,12 +265,13 @@ class Task1:
                         
             self.time_intervals(interval_ms=self.moveBackDelay)
 
-            self.actuator1BackwardPin.value(1)
+            self. move_servos_backward()
+
                 
             #wait for actuator to move spouts backward
-            self.time_intervals(interval_ms=self.actuatorBackwardDuration)
+            #self.time_intervals(interval_ms=self.actuatorBackwardDuration)
                 
-            self.actuator1BackwardPin.value(0)
+            #self.actuator1BackwardPin.value(0)
             #timeWindow = utime.ticks_ms()
             #break
             #self.writeToDac(0)
@@ -300,6 +308,24 @@ class Task1:
         self.solenoid2Pin.value(0)
 
 
+    def move_servos_forward(self):
+        self.servo1Pin.duty(55)
+        self.servo2Pin.duty(55)
+        #step = 5
+        #for i in range (0, 50, step):
+        #    self.servo1Pin.duty(i)
+        #    self.servo2Pin.duty(i)
+        #    time.sleep (0.1)
+
+    def move_servos_backward(self):
+        self.servo1Pin.duty(25)
+        self.servo2Pin.duty(25)
+        #step = 5
+        #for i in range (50, 0, -step):
+        #    self.servo1Pin.duty(i)
+        #    self.servo2Pin.duty(i)
+        #    time.sleep (0.1)
+            
     def actuator_forward(self):
         self.actuator1ForwardPin.value(1)
         #wait for actuator to move spouts forward

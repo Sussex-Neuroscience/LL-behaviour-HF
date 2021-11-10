@@ -191,65 +191,78 @@ module poleFit(){
 }//end module
 
 
-/*
+
 difference(){
-    cylinder(d=50,h=5);
+    cylinder(d=50,h=4);
     translate([0,0,-4]){
         cylinder(d=screwDia+2*tol,h=10);
     }//end translate
     }//end translate
 rotate([0,90,0]){
-    translate([5,-14,40]){
-    servo_fit();
-  }
-    }
-
-translate([100,100,0]){
-
-difference(){
-cylinder(d=50,h=5);
-translate([0,0,-4]){
-cylinder(d=screwDia+2*tol,h=10);
-}
-}
-rotate([0,-90,0]){
-    translate([12.5,20,-20]){
-poleFit();
-    }
-}
-}
-*/
-
-
-
-
-
-
-
-/*
+    translate([-33,5,0]){
+    //difference(){
 difference(){
 servo_fit();
    
 rotate([0,0,90]){
-translate([-5,-servoY-holderWall-5,servoZ+2*holderWall]){
+translate([-5,-servoY-holderWall-4.5,servoZ+2*holderWall]){
     difference(){
     cube([40,6,gearW+8]);
         
-    translate([20,railH+5-2,(gearW)/2]){
-        linear_rail_neg(leng = 45);
-    }//end translate
+    //translate([20,railH+5-2,(gearW)/2-0.5]){
+    //    %linear_rail_neg(leng = 45);
+    //}//end translate
     }//end difference
 
 }//end translate
 }//end rotate
 }//end difference
-*/
-//translate([2,0,0])
-//translate([(servoX)+gearW/2,servoY/2,servoZ+holderWall])
-//rotate([0,0,90])
-linear_rail_pos(leng = 50);
+  }
+    }
+translate([40,-20,0]){
+difference(){
+    cube([40,6,gearW+8]);
+        
+    translate([20,railH+5-2,(gearW)/2-0.5]){
+        linear_rail_neg(leng = 45);
+    }//end translate
+    }//end difference
+}//end translate
+
+
+/////////////////////////////////////////
+//translate([100,100,0]){
+//
+//difference(){
+//cylinder(d=50,h=5);
+//translate([0,0,-4]){
+//cylinder(d=screwDia+2*tol,h=10);
+//}
+//}
+
+
+
+//rotate([0,-90,0]){
+//    translate([12.5,20,-20]){
+//poleFit();
+//    }
+//}
+//}
+
+
+
+
+
+
+
+
+
+translate([68,0,0])
+translate([(servoX)+gearW/2,servoY/2,servoZ+holderWall])
+rotate([0,0,90])
+linear_rail_pos(leng = 75);
 //translate([0,0,0])
 //servo_fit();
-//translate([(servoX+2*holderWall)/2,(servoY+2*holderWall)/2,servoZ+holderWall])
-//gear();
+translate([(servoX+2*holderWall)/2-50,(servoY+2*holderWall)/2,servoZ+holderWall])
+gear();
 
