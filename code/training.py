@@ -203,7 +203,7 @@ class Task1:
             
             
             #once the actuator is out, we can end the stimulation trigger
-            self.stimTriggerPin.value(0) 
+            #self.stimTriggerPin.value(0) 
    
             #pause so that there is no false triggering of the lick sensors.
             self.time_intervals(interval_ms=200)
@@ -220,6 +220,7 @@ class Task1:
             
 
             while timeWindow2-timeWindow1<self.responseWindowDuration:
+                self.stimTriggerPin.value(1)
                 lick1Status = self.lickSensor1Pin.value()
                 #print(str(lick1Status))
                 lick2Status = self.lickSensor2Pin.value()
@@ -231,7 +232,7 @@ class Task1:
                     self.responseStatus = 1
                     #solenoid1 = 1
                     #value = self.volt2Int(volt = self.lickSensor1Ind)
-                    self.writeToDac(value = self.lickSensor1Ind)
+                    #self.writeToDac(value = self.lickSensor1Ind)
                     #print("lick1"+ str(value))
                     break
 
@@ -247,7 +248,7 @@ class Task1:
                     self.time_intervals(interval_ms=5)                    
                     self.writeToDac(0)
                     #value = self.volt2Int(volt = self.lickSensor2Ind)
-                    self.writeToDac(value = self.lickSensor2Ind)
+                    #self.writeToDac(value = self.lickSensor2Ind)
                     self.responseStatus = 2
                     #solenoid2 = 1
                     
@@ -271,6 +272,7 @@ class Task1:
             
             if self.responseStatus == 0:
                 self.noLickCounter = self.noLickCounter+1
+                
                 print("no licks")
 
             if self.responseStatus == 1:
@@ -280,7 +282,7 @@ class Task1:
                 self.writeToDac(self.solenoid1Ind)
                 self.time_intervals(interval_ms=self.reward1Duration)
                 self.solenoid1Pin.value(0)
-                self.writeToDac(0)
+                #self.writeToDac(0)
                 self.correctLick1Counter = self.correctLick1Counter + 1
                 
             
@@ -291,9 +293,11 @@ class Task1:
                 self.writeToDac(self.solenoid2Ind)
                 self.time_intervals(interval_ms=self.reward2Duration)
                 self.solenoid2Pin.value(0)
-                self.writeToDac(0)
+                #self.writeToDac(0)
                 self.correctLick2Counter = self.correctLick2Counter + 1
-          
+            
+            self.writeToDac(self.stimIndValue)
+            
             if self.responseStatus == 3:
                 print("lick spout 1 error\n") 
                 self.incorrectLick1Counter = self.incorrectLick1Counter + 1
@@ -318,7 +322,12 @@ class Task1:
             self.time_intervals(interval_ms=self.moveBackDelay)
             
             self.move_servos_backward()
-
+            
+            #once the servos have been moved back, we can end the stimulation trigger
+            
+            self.writeToDac(0)
+            self.stimTriggerPin.value(0) 
+            
             #self.actuator1BackwardPin.value(1)
                 
             #wait for actuator to move spouts backward
