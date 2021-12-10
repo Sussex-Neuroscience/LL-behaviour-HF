@@ -440,14 +440,5 @@ class Task1:
     #example DAC
     #self.writeToDac(2048)
 
-#
-# - At the start there is a 10 sec interval without a stimulus to record baseline activity.
-# Then the mouse sees a stimulus (always the same drifting grating) which appears randomly either on the left or the right screen.
-# after 5 sec. of stimulus presentation the actuator moves the lick sensors in front of the mouse for two sec.
-# - in which the mouse has to report on which side the stimulus is present, hence lick left or right.
-#   -If the answer is correct a reward is given (solenoid valves).
-#   -If the answer is incorrect no reward is given.
-# - The actuator retracts the lick sensors after 2 sec. either way.
-# - Then there is an inter trial interval for 5+ sec before the next stimulus will be presented.
-# If the mouse was incorrect the stimulus will be presented on the same side as the trial before until the mouse makes the correct decision (to avoid bias).I might want to change the timeframes for the different stages depending on how the training goes.
+
 
