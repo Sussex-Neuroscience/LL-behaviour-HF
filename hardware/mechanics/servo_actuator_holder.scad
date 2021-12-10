@@ -59,23 +59,7 @@ railH=5;
 
 
 
-
-module nutpocket(){
-    difference(){
-        cube([nutHei+5,nutDia+5,nutDia+6],center=true);
-        union(){
-            translate([0,0,nutDia/2-2.5]){
-                rotate([0,90,0]){
-                    translate([0,0,-10]){
-                        cylinder(d=screwDia+2*tol,h=nutHei+20);
-                        }//end translate
-                }//end rotate
-                cube([nutHei+2*tol,nutDia+2*tol,nutDia+4+2*tol],center=true);
-                }//end translate
-            }//end union
-        }//end differece
-    }//end module
-    
+   
 module gear(){
 
     difference(){
@@ -224,7 +208,7 @@ difference(){
     cube([40,6,gearW+8]);
         
     translate([20,railH+5-2,(gearW)/2-0.5]){
-        linear_rail_neg(leng = 45);
+        linear_rail_neg(leng = railL+15);
     }//end translate
     }//end difference
 }//end translate
@@ -250,17 +234,10 @@ difference(){
 //}
 
 
-
-
-
-
-
-
-
 translate([68,0,0])
 translate([(servoX)+gearW/2,servoY/2,servoZ+holderWall])
 rotate([0,0,90])
-linear_rail_pos(leng = 75);
+linear_rail_pos(leng = 95);
 //translate([0,0,0])
 //servo_fit();
 translate([(servoX+2*holderWall)/2-50,(servoY+2*holderWall)/2,servoZ+holderWall])
