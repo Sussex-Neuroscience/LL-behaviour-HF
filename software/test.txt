@@ -1,0 +1,2 @@
+  monitor: 0....trials = 1  no lick = 1  correct trials = 0  incorrect trials = 0  spout 1 correct = 0  spout 2 correct = 0  spout 1 incorrect = 0  spout 2 incorrect = 0
+..  monitor: 0.

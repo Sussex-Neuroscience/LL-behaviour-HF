@@ -141,8 +141,8 @@ class Task1:
             #self.time_intervals(interval_ms=self.iti)
             
             #self.trial = self.trial + 1
-            print("status: "+str(self.responseStatus)+"\n")
-            print("trial " + str(trial+1))
+            #print("status: "+str(self.responseStatus)+"\n")
+            print("trial " + str(trial+1),end='')
             if self.responseStatus == 3 or self.responseStatus == 4:
                 monitor = self.bias_correction()
                 print("bias correction")
@@ -154,7 +154,7 @@ class Task1:
             self.monitorSidePin.value(monitor)
             self.time_intervals(interval_ms=10)
             
-            print("monitor: " + str(monitor)+"\n" )
+            print("  monitor: " + str(monitor)+"\n" )
             
             
         #while self.trial <= self.numberOfTrials:
