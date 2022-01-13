@@ -27,7 +27,7 @@ class Task1:
         
         #self.monitor1 = 998
         #self.monitor2 = 999
-        self.i2c = SoftI2C(scl=Pin(12), sda=Pin(13), freq=100000)
+        self.i2c = SoftI2C(scl=Pin(32), sda=Pin(33), freq=100000)
 
         #self.i2c=SoftI2C(scl=Pin(9), sda=Pin(10))
         self.i2cAdd = self.i2c.scan()
