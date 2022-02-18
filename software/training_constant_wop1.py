@@ -91,7 +91,8 @@ class Task1:
         self.reward1Duration = 100  # duration the solenoid valves will stay in open state, 
                                     #which ends up being the amount of water offered
         self.reward2Duration = 100  # duration the solenoid valves will stay in open state,
-        ##                          #which ends up being the amount of water offered
+                                    #which ends up being the amount of water offered
+        
         self.moveBackDelay = 700
         self.numberOfTrials = 100 # the number of trials that will be presented to the animals
         
@@ -132,12 +133,10 @@ class Task1:
         #lick2Status = 0
         
         while trial < self.numberOfTrials:
-            # after trial is done, start iti
-            #self.time_intervals(interval_ms=self.iti)
-            
-            #self.trial = self.trial + 1
-            #print("status: "+str(self.responseStatus)+"\n")
-            #print("trial " + str(trial+1),end='')
+            #start a trial
+            #make sure the remaining wop is equal to initial wop
+            self.remainingWOP = self.responseWindowDuration
+
             if self.responseStatus == 3 or self.responseStatus == 4:
                 monitor = self.bias_correction()
                 #print("bias correction")
@@ -265,7 +264,13 @@ class Task1:
                     #solenoid2 = 0
                 
                 timeWindow2 = utime.ticks_ms()  
+            # licking breaks the initial WOP cycle and gives out reward and removes the spouts
+            # or it does nothing and removes the spouts (when a wrong lick is made).
+            # so to keep the stimulus going for a fixed period, we need to know how much time
+            #it took for animals to react and discount that
+            self.remainingWOP = remainingWOP-(timeWindow2-timeWindow1)
 
+            #than later, we need to discount reward time
             
             if self.responseStatus == 0:
                 self.noLickCounter = self.noLickCounter+1
@@ -273,6 +278,7 @@ class Task1:
                 #print("no licks")
 
             if self.responseStatus == 1:
+                self.remainingWOP = remainingWOP-self.reward1Duration
                 #print("solenoid1\n")
                 self.solenoid1Pin.value(1)
                 #value = value+self.solenoid1Ind
@@ -282,8 +288,10 @@ class Task1:
                 #self.writeToDac(0)
                 self.correctLick1Counter = self.correctLick1Counter + 1
                 
+                
             
             if self.responseStatus == 2:
+                self.remainingWOP = remainingWOP-self.reward2Duration
                 #print("solenoid2\n")
                 self.solenoid2Pin.value(1)
                 #value = value+self.solenoid2Ind
@@ -319,11 +327,17 @@ class Task1:
             print(" spout 2 incorrect, " + str(self.incorrectLick2Counter)+",", end='\n')
                         
             self.time_intervals(interval_ms=self.moveBackDelay)
-            
+            self.remainingWOP = remainingWOP-self.moveBackDelay
             self.move_servos_backward()
             
-            #once the servos have been moved back, we can end the stimulation trigger
-            
+            #once the servos have been moved back, and we waited for the remaining WOP
+            # we can end the stimulation trigger
+
+            #
+            print("remaining WOP time: "+str(self.remainingWOP))
+            if self.remainingWOP >0:
+                self.time_intervals(interval_ms=self.remainingWOP)
+                
             self.writeToDac(0)
             self.stimTriggerPin.value(0) 
             
