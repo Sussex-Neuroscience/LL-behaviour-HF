@@ -1,4 +1,4 @@
-....trial, 1, monitor, 1, response Status, 0,  no lick, 1,  correct trials, 0,  incorrect trials, 0,  spout 1 correct, 0,  spout 2 correct, 0,  spout 1 incorrect, 0,  spout 2 incorrect, 0,
-.....trial, 2, monitor, 1, response Status, 0,  no lick, 2,  correct trials, 0,  incorrect trials, 0,  spout 1 correct, 0,  spout 2 correct, 0,  spout 1 incorrect, 0,  spout 2 incorrect, 0,
-....trial, 3, monitor, 0, response Status, 0,  no lick, 3,  correct trials, 0,  incorrect trials, 0,  spout 1 correct, 0,  spout 2 correct, 0,  spout 1 incorrect, 0,  spout 2 incorrect, 0,
-.....trial, 4, monitor, 1, response Status, 0,  no lick, 4,  correct trials, 0,  incorrect trials, 0,  spout 1 correct, 0,  spout 2 correct, 0,  spout 1 incorrect, 0,  spout 2 incorrect, 0,
+trial 1no correction
+  monitor: 1
+
+..stim on

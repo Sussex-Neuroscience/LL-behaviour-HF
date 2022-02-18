@@ -48,8 +48,8 @@ class Task1:
         
         #self.actuator1ForwardPin = Pin(15, Pin.OUT)
         #self.actuator1BackwardPin = Pin(2, Pin.OUT)
-        self.servo1Pin = PWM(Pin(2), freq=50)
-        self.servo2Pin = PWM(Pin(15), freq=50)
+        self.servo1Pin = PWM(Pin(15), freq=50)
+        self.servo2Pin = PWM(Pin(2), freq=50)
         
         self.servoMax = 45
         self.servoMin = 25
