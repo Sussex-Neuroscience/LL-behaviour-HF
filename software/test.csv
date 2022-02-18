@@ -1,15 +1,4 @@
-<<<<<<< HEAD
 trial 1no correction
   monitor: 1
 
 ..stim on
-=======
-...
-**[ys] <class 'serial.serialutil.SerialException'>
-**[ys] ClearCommError failed (PermissionError(13, 'Access is denied.', None, 5))
-
-
-**[ys] <class 'serial.serialutil.SerialException'>
-**[ys] ClearCommError failed (PermissionError(13, 'Access is denied.', None, 5))
-
->>>>>>> c4779f34706c17e18fb4dbafbe3492326247a434

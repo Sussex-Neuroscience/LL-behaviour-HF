@@ -1,11 +1,6 @@
 import utime
 from machine import Pin
 from machine import PWM
-#from machine import UART
-#from machine import I2C
-#
-#from machine import RTC
-#from machine import I2C
 from machine import SoftI2C
 
 import urandom
@@ -41,8 +36,8 @@ class Task1:
         
         #self.actuator1ForwardPin = Pin(15, Pin.OUT)
         #self.actuator1BackwardPin = Pin(2, Pin.OUT)
-        self.servo1Pin = PWM(Pin(15), freq=50)
-        self.servo2Pin = PWM(Pin(2), freq=50)
+        self.servo1Pin = PWM(Pin(2), freq=50)
+        self.servo2Pin = PWM(Pin(15), freq=50)
         
         self.servoMax = 45
         self.servoMin = 25
@@ -89,14 +84,15 @@ class Task1:
         # time/interval variables
         self.iti = 10000  # inter trial interval in ms
         self.baseline = 10000  # time to wait at the beginning of session to record baseline
-        self.stimDuration = 10000  # stimulus presentation duration
+        self.stimDuration = 3000  # stimulus presentation duration
         self.responseWindowDuration = 2000  # time window to respond after stim presentation
         #self.actuatorForwardDuration = 300 #how much time the actuator spends moving forward
         #self.actuatorBackwardDuration = 300 #how much time the actuator spends moving forward
         self.reward1Duration = 100  # duration the solenoid valves will stay in open state, 
                                     #which ends up being the amount of water offered
         self.reward2Duration = 100  # duration the solenoid valves will stay in open state,
-        ##                          #which ends up being the amount of water offered
+                                    #which ends up being the amount of water offered
+        
         self.moveBackDelay = 700
         self.numberOfTrials = 100 # the number of trials that will be presented to the animals
         
@@ -137,24 +133,22 @@ class Task1:
         #lick2Status = 0
         
         while trial < self.numberOfTrials:
-            # after trial is done, start iti
-            #self.time_intervals(interval_ms=self.iti)
-            
-            #self.trial = self.trial + 1
-            #print("status: "+str(self.responseStatus)+"\n")
-            print("trial " + str(trial+1),end='')
+            #start a trial
+            #make sure the remaining wop is equal to initial wop
+            self.remainingWOP = self.responseWindowDuration
+
             if self.responseStatus == 3 or self.responseStatus == 4:
                 monitor = self.bias_correction()
-                print("bias correction")
+                #print("bias correction")
                 
             else:
-                print("no correction")
+                #print("no correction")
                 monitor = self.monitorOrder[trial]
             
             self.monitorSidePin.value(monitor)
             self.time_intervals(interval_ms=10)
             
-            print("  monitor: " + str(monitor)+"\n" )
+            #print("  monitor: " + str(monitor)+"\n" )
             
             
         #while self.trial <= self.numberOfTrials:
@@ -182,7 +176,7 @@ class Task1:
             self.writeToDac(value = self.stimIndValue)
             
             #start stimulation
-            print("stim on")
+            #print("stim on")
             self.stimTriggerPin.value(1) 
             
 
@@ -198,7 +192,7 @@ class Task1:
             #print("moving actuator\n")
             # once stimulation is close to being done, start the actuator
             self.move_servos_forward()
-            print("moving servos")
+            #print("moving servos")
             # once stimulation is close to being done, start the actuator
               
             
@@ -270,15 +264,22 @@ class Task1:
                     #solenoid2 = 0
                 
                 timeWindow2 = utime.ticks_ms()  
+            # licking breaks the initial WOP cycle and gives out reward and removes the spouts
+            # or it does nothing and removes the spouts (when a wrong lick is made).
+            # so to keep the stimulus going for a fixed period, we need to know how much time
+            #it took for animals to react and discount that
+            self.remainingWOP = remainingWOP-(timeWindow2-timeWindow1)
 
+            #than later, we need to discount reward time
             
             if self.responseStatus == 0:
                 self.noLickCounter = self.noLickCounter+1
                 
-                print("no licks")
+                #print("no licks")
 
             if self.responseStatus == 1:
-                print("solenoid1\n")
+                self.remainingWOP = remainingWOP-self.reward1Duration
+                #print("solenoid1\n")
                 self.solenoid1Pin.value(1)
                 #value = value+self.solenoid1Ind
                 self.writeToDac(self.solenoid1Ind)
@@ -287,9 +288,11 @@ class Task1:
                 #self.writeToDac(0)
                 self.correctLick1Counter = self.correctLick1Counter + 1
                 
+                
             
             if self.responseStatus == 2:
-                print("solenoid2\n")
+                self.remainingWOP = remainingWOP-self.reward2Duration
+                #print("solenoid2\n")
                 self.solenoid2Pin.value(1)
                 #value = value+self.solenoid2Ind
                 self.writeToDac(self.solenoid2Ind)
@@ -301,32 +304,40 @@ class Task1:
             self.writeToDac(self.stimIndValue)
             
             if self.responseStatus == 3:
-                print("lick spout 1 error\n") 
+                #print("lick spout 1 error\n") 
                 self.incorrectLick1Counter = self.incorrectLick1Counter + 1
             if self.responseStatus == 4:
-                print("lick spout 2 error\n") 
+                #print("lick spout 2 error\n") 
                 self.incorrectLick2Counter = self.incorrectLick2Counter + 1
             
             #self.responseStatus = 0
             correctTrials = self.correctLick1Counter+self.correctLick2Counter
             incorrectTrials = self.incorrectLick1Counter+self.incorrectLick2Counter
-            print("trials = " + str(trial+1))
-            print("no lick = " + str(self.noLickCounter))
-            print("correct trials = " + str(correctTrials))
-            print("incorrect trials = " + str(incorrectTrials)+"\n")
+            print("trial, " + str(trial+1)+",", end=' ')
+            print("monitor, "+ str(monitor)+",", end=' ')
+            print("response Status, "+ str(self.responseStatus)+",", end=' ')
+            print(" no lick, " + str(self.noLickCounter)+",", end=' ')
+            print(" correct trials, " + str(correctTrials)+",", end=' ')
+            print(" incorrect trials, " + str(incorrectTrials)+",",end=' ')
             
-            print("lick spout 1 correct = " + str(self.correctLick1Counter))
-            print("lick spout 2 correct = " + str(self.correctLick2Counter)+"\n")
+            print(" spout 1 correct, " + str(self.correctLick1Counter)+",", end=' ')
+            print(" spout 2 correct, " + str(self.correctLick2Counter)+",", end=' ')
             
-            print("lick spout 1 incorrect = " + str(self.incorrectLick1Counter))
-            print("lick spout 2 incorrect = " + str(self.incorrectLick2Counter)+"\n")
+            print(" spout 1 incorrect, " + str(self.incorrectLick1Counter)+",", end=' ')
+            print(" spout 2 incorrect, " + str(self.incorrectLick2Counter)+",", end='\n')
                         
             self.time_intervals(interval_ms=self.moveBackDelay)
-            
+            self.remainingWOP = remainingWOP-self.moveBackDelay
             self.move_servos_backward()
             
-            #once the servos have been moved back, we can end the stimulation trigger
-            
+            #once the servos have been moved back, and we waited for the remaining WOP
+            # we can end the stimulation trigger
+
+            #
+            print("remaining WOP time: "+str(self.remainingWOP))
+            if self.remainingWOP >0:
+                self.time_intervals(interval_ms=self.remainingWOP)
+                
             self.writeToDac(0)
             self.stimTriggerPin.value(0) 
             
